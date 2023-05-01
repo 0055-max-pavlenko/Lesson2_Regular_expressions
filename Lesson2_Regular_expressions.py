@@ -22,8 +22,6 @@ for i in range(len(contacts_list)):
     lastname_items = re.findall(r"\w+", contacts_list[i]['lastname'])
     firstname_items = re.findall(r"\w+", contacts_list[i]['firstname'])
     
-
-
     if len(lastname_items) != 1:
         contacts_list[i]['lastname'] = lastname_items[0]
         contacts_list[i]['firstname'] = lastname_items[1]
@@ -31,13 +29,46 @@ for i in range(len(contacts_list)):
             contacts_list[i]['surname'] = lastname_items[2]
         except:
             pass
-       
-
+     
     if len(firstname_items) == 2:
         contacts_list[i]['firstname'] = firstname_items[0]
         contacts_list[i]['surname'] = firstname_items[1] 
 
+#Приводим номера телефонов к нужному формату
 
+for i in range(len(contacts_list)):
+    pattern = r"(8|\+7)(\s|\()*(\d{3})(\)*)(\s|-)*(\d{3})(\s|-)*(\d{2})(\s|-)*(\d{2})(\s)*(\s|\()*(доб.)*(\s)*(\d+)*(\))*"
+    substitution = r"+7(\3)\6-\8-\10 \13\15"
+    contacts_list[i]['phone'] = re.sub(pattern, substitution, contacts_list[i]['phone'])
+
+    
+
+#Объединяем данные для людей с совпадающими Фамилией и Именем
+contacts_list = sorted(contacts_list, key = lambda x:(x['lastname'], x['firstname']))
+current_person = 0
+total_persons = len(contacts_list)-1
+
+while current_person < total_persons:
+    if (contacts_list[current_person]['lastname'] == contacts_list[current_person+1]['lastname']) and (contacts_list[current_person]['firstname'] == contacts_list[current_person+1]['firstname']):
+        if contacts_list[current_person]['surname'] != contacts_list[current_person+1]['surname']:
+            contacts_list[current_person]['surname'] += contacts_list[current_person+1]['surname']
+
+        if contacts_list[current_person]['organization'] != contacts_list[current_person+1]['organization']:
+            contacts_list[current_person]['organization'] += contacts_list[current_person+1]['organization']
+            
+        if contacts_list[current_person]['position'] != contacts_list[current_person+1]['position']:
+            contacts_list[current_person]['position'] += contacts_list[current_person+1]['position']
+            
+        if contacts_list[current_person]['phone'] != contacts_list[current_person+1]['phone']:
+            contacts_list[current_person]['phone'] += contacts_list[current_person+1]['phone']
+           
+        if contacts_list[current_person]['email'] != contacts_list[current_person+1]['email']:
+            contacts_list[current_person]['email'] += contacts_list[current_person+1]['email']
+            
+        contacts_list.remove(contacts_list[current_person+1])
+        total_persons -=1
+    else:
+        current_person +=1
 
 
 ## 2. Сохраните получившиеся данные в другой файл.
@@ -48,5 +79,4 @@ with open("phonebook.csv", "w", encoding = 'utf-8', newline='') as f:
  datawriter.writeheader()
  datawriter.writerows(contacts_list)
   
-## Вместо contacts_list подставьте свой список:
-  #datawriter.writerows(contacts_list)
+
